@@ -1,0 +1,639 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venue Booking System</title>
+
+    <!-- Bootstrap CSS for responsive layout and styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container py-4">
+
+    <!-- Page heading -->
+    <h2 class="text-center mb-4">Venue Booking System</h2>
+
+    <!-- Venue filters -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Filter Venues
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+
+                <!-- Filter venues by type -->
+                <div class="col-md-4">
+                    <label for="venueTypeFilter" class="form-label">
+                        Venue Type
+                    </label>
+                    <select id="venueTypeFilter" class="form-select">
+                        <option value="All">All Types</option>
+                        <option value="Banquet Hall">Banquet Hall</option>
+                        <option value="Lawn">Lawn</option>
+                        <option value="Conference Hall">Conference Hall</option>
+                        <option value="Party Hall">Party Hall</option>
+                    </select>
+                </div>
+
+                <!-- Filter venues by minimum guest capacity -->
+                <div class="col-md-4">
+                    <label for="capacityFilter" class="form-label">
+                        Minimum Guest Capacity
+                    </label>
+                    <input type="number" id="capacityFilter"
+                           class="form-control" min="0"
+                           placeholder="Enter guest capacity">
+                </div>
+
+                <!-- Reset filters -->
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" id="resetFilters"
+                            class="btn btn-secondary w-100">
+                        Reset Filters
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Venue cards will be generated dynamically -->
+    <h4 class="mb-3">Available Venues</h4>
+    <div class="row g-3" id="venueList"></div>
+
+    <!-- Venue booking form -->
+    <div class="card mt-4">
+        <div class="card-header bg-success text-white">
+            Book Your Venue
+        </div>
+
+        <div class="card-body">
+            <form id="bookingForm">
+
+                <div class="row g-3">
+
+                    <!-- Customer name -->
+                    <div class="col-md-6">
+                        <label for="customerName" class="form-label">
+                            Customer Name
+                        </label>
+                        <input type="text" id="customerName"
+                               class="form-control" required>
+                    </div>
+
+                    <!-- Customer email -->
+                    <div class="col-md-6">
+                        <label for="customerEmail" class="form-label">
+                            Email Address
+                        </label>
+                        <input type="email" id="customerEmail"
+                               class="form-control" required>
+                    </div>
+
+                    <!-- Venue selection -->
+                    <div class="col-md-6">
+                        <label for="venueSelect" class="form-label">
+                            Select Venue
+                        </label>
+                        <select id="venueSelect" class="form-select" required>
+                            <option value="">Choose a venue</option>
+                        </select>
+                    </div>
+
+                    <!-- Event type -->
+                    <div class="col-md-6">
+                        <label for="eventType" class="form-label">
+                            Event Type
+                        </label>
+                        <select id="eventType" class="form-select" required>
+                            <option value="">Choose event type</option>
+                            <option value="Wedding">Wedding</option>
+                            <option value="Birthday">Birthday</option>
+                            <option value="Corporate Event">Corporate Event</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Event date -->
+                    <div class="col-md-6">
+                        <label for="eventDate" class="form-label">
+                            Event Date
+                        </label>
+                        <input type="date" id="eventDate"
+                               class="form-control" required>
+                    </div>
+
+                    <!-- Number of guests -->
+                    <div class="col-md-6">
+                        <label for="guests" class="form-label">
+                            Number of Guests
+                        </label>
+                        <input type="number" id="guests"
+                               class="form-control" min="1" required>
+                    </div>
+
+                    <!-- Number of booking days -->
+                    <div class="col-md-6">
+                        <label for="days" class="form-label">
+                            Number of Days
+                        </label>
+                        <input type="number" id="days"
+                               class="form-control" min="1" value="1" required>
+                    </div>
+
+                    <!-- Estimated booking amount -->
+                    <div class="col-md-6">
+                        <label class="form-label">Total Amount</label>
+                        <h4 class="text-primary" id="bookingAmount">₹0</h4>
+                    </div>
+
+                </div>
+
+                <!-- Submit booking details -->
+                <button type="submit" class="btn btn-success mt-4">
+                    Confirm Booking
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Booking summary displayed after successful booking -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-dark">
+            Latest Booking Summary
+        </div>
+        <div class="card-body" id="bookingSummary">
+            No booking confirmed yet.
+        </div>
+    </div>
+
+    <!-- Confirmed bookings table -->
+    <div class="card mt-4">
+        <div class="card-header bg-dark text-white">
+            Confirmed Bookings
+        </div>
+
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Venue</th>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Guests</th>
+                        <th>Days</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+
+                <!-- Booking rows will be generated dynamically -->
+                <tbody id="bookingTable"></tbody>
+            </table>
+        </div>
+
+        <!-- Total revenue calculated using reduce() -->
+        <div class="card-footer">
+            <h5>Total Booking Revenue: <span id="totalRevenue">₹0</span></h5>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+// ==========================================
+// 1. VENUE DATA: ARRAY OF OBJECTS
+// ==========================================
+
+// Each object represents one venue and its details.
+const venues = [
+    {
+        id: 1,
+        name: "Jade Luxury Banquets",
+        type: "Banquet Hall",
+        location: "Bodakdev, Ahmedabad",
+        capacity: 2000,
+        price: 25000, // Demo booking price per day; confirm actual rates with the venue.
+        available: true,
+        // Real photo of Jade Luxury Banquets in Ahmedabad.
+        image: "https://cdn.venuelook.com/uploads/space_26460/1617699593_595x400.png"
+    },
+    {
+        id: 2,
+        name: "The Ummed Ahmedabad - Front Lawn",
+        type: "Lawn",
+        location: "Airport Circle, Ahmedabad",
+        capacity: 450,
+        price: 35000, // Demo booking price per day; confirm actual rates with the venue.
+        available: true,
+        // Real photo from The Ummed Ahmedabad's official wedding venue page.
+        image: "https://assets.simplotel.com/simplotel/image/upload/x_0%2Cy_473%2Cw_2160%2Ch_1215%2Cr_0%2Cc_crop%2Cq_80%2Cfl_progressive/w_900%2Cf_auto%2Cc_fit/the-ummed-ahmedabad/hotel-wedding-venue-1"
+    },
+    {
+        id: 3,
+        name: "The Ummed Ahmedabad - Gokul Dwarka",
+        type: "Conference Hall",
+        location: "Airport Circle, Ahmedabad",
+        capacity: 120,
+        price: 15000, // Demo booking price per day; confirm actual rates with the venue.
+        available: true,
+        // Real photo of the Gokul Dwarka meeting room at The Ummed Ahmedabad.
+        image: "https://assets.simplotel.com/simplotel/image/upload/x_0%2Cy_233%2Cw_4632%2Ch_2606%2Cr_0%2Cc_crop%2Cq_80%2Cfl_progressive/w_825%2Cf_auto%2Cc_fit/the-ummed-ahmedabad/Gokul_dwarka_snap-denoised_sharpened_upscaled_x3_light-100__wb-50__exposure_correction-67a35a8a-2_1_pjm9jk"
+    },
+    {
+        id: 4,
+        name: "La Serata Banquets - Indoor Hall",
+        type: "Party Hall",
+        location: "Shilaj, Ahmedabad",
+        capacity: 350,
+        price: 10000, // Demo booking price per day; confirm actual rates with the venue.
+        available: true,
+        // Real photo of La Serata's indoor banquet hall.
+        image: "https://cdn.venuelook.com/uploads/space_40295/1736595718_595x400.png"
+    },
+    {
+        id: 5,
+        name: "La Serata Banquets - Party Lawn",
+        type: "Lawn",
+        location: "Shilaj, Ahmedabad",
+        capacity: 500,
+        price: 50000, // Demo booking price per day; confirm actual rates with the venue.
+        available: false,
+        // Real photo of La Serata's outdoor party lawn.
+        image: "https://cdn.venuelook.com/uploads/space_40298/1736597206_595x400.png"
+    }
+];
+
+// Stores all confirmed bookings.
+const bookings = [];
+
+// Stores the currently selected venue.
+let selectedVenue = null;
+
+
+// ==========================================
+// 2. DISPLAY VENUES USING map()
+// ==========================================
+
+const displayVenues = (venueData) => {
+
+    // Generate a Bootstrap card for each venue.
+    document.getElementById("venueList").innerHTML =
+        venueData.map(venue => `
+            <div class="col-md-4">
+                <div class="card h-100">
+
+                    <!-- Displays the venue/event photograph -->
+                    <img src="${venue.image}"
+                         class="card-img-top object-fit-cover"
+                         alt="${venue.name}"
+                         height="220">
+
+                    <div class="card-body">
+                        <h5 class="card-title">${venue.name}</h5>
+
+                        <p class="mb-1">Type: ${venue.type}</p>
+                        <p class="mb-1">Location: ${venue.location}</p>
+                        <p class="mb-1">Capacity: ${venue.capacity} guests</p>
+
+                        <h5 class="text-primary">
+                            ₹${venue.price.toLocaleString("en-IN")} / day
+                        </h5>
+
+                        <p>
+                            <span class="badge ${venue.available
+                                ? "bg-success"
+                                : "bg-danger"}">
+                                ${venue.available ? "Available" : "Unavailable"}
+                            </span>
+                        </p>
+
+                        <button type="button"
+                                class="btn btn-primary w-100"
+                                onclick="selectVenue(${venue.id})"
+                                ${!venue.available ? "disabled" : ""}>
+                            Book Venue
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        `).join("");
+
+};
+
+
+// ==========================================
+// 3. POPULATE VENUE FORM DROPDOWN
+// ==========================================
+
+const populateVenueSelect = () => {
+
+    // Show only venues currently available for booking.
+    const availableVenues = venues.filter(venue => venue.available);
+
+    document.getElementById("venueSelect").innerHTML =
+        `<option value="">Choose a venue</option>` +
+        availableVenues.map(venue => `
+            <option value="${venue.id}">
+                ${venue.name} - ₹${venue.price.toLocaleString("en-IN")} / day
+            </option>
+        `).join("");
+
+};
+
+
+// ==========================================
+// 4. SELECT A VENUE
+// ==========================================
+
+const selectVenue = (venueId) => {
+
+    // Find the venue matching the selected ID.
+    selectedVenue = venues.find(venue => venue.id === venueId);
+
+    // Select the venue in the booking form.
+    document.getElementById("venueSelect").value = venueId;
+
+    // Update the estimated booking amount.
+    calculateAmount();
+
+    // Bring the booking form into view.
+    document.getElementById("bookingForm").scrollIntoView({
+        behavior: "smooth"
+    });
+
+};
+
+
+// ==========================================
+// 5. FILTER VENUES USING filter()
+// ==========================================
+
+const filterVenues = () => {
+
+    // Read the selected venue type and minimum capacity.
+    const selectedType =
+        document.getElementById("venueTypeFilter").value;
+
+    const minimumCapacity =
+        Number(document.getElementById("capacityFilter").value) || 0;
+
+    // Keep only venues matching the selected conditions.
+    const filteredVenues = venues.filter(venue => {
+
+        const matchesType =
+            selectedType === "All" || venue.type === selectedType;
+
+        const matchesCapacity =
+            venue.capacity >= minimumCapacity;
+
+        return matchesType && matchesCapacity;
+
+    });
+
+    // Display the filtered results.
+    displayVenues(filteredVenues);
+
+};
+
+
+// Run filtering whenever either filter changes.
+document.getElementById("venueTypeFilter")
+    .addEventListener("change", filterVenues);
+
+document.getElementById("capacityFilter")
+    .addEventListener("input", filterVenues);
+
+
+// Reset filters to their default values.
+document.getElementById("resetFilters").addEventListener("click", () => {
+
+    document.getElementById("venueTypeFilter").value = "All";
+    document.getElementById("capacityFilter").value = "";
+
+    displayVenues(venues);
+
+});
+
+
+// ==========================================
+// 6. CALCULATE BOOKING AMOUNT
+// ==========================================
+
+const calculateAmount = () => {
+
+    // Read the selected venue ID from the form.
+    const venueId = Number(document.getElementById("venueSelect").value);
+
+    // Find the matching venue.
+    selectedVenue = venues.find(venue => venue.id === venueId) || null;
+
+    // Read the number of booking days.
+    const days = Number(document.getElementById("days").value) || 0;
+
+    // Calculate the amount only when a venue and valid day count exist.
+    const amount = selectedVenue && days > 0
+        ? selectedVenue.price * days
+        : 0;
+
+    // Display the estimated booking amount.
+    document.getElementById("bookingAmount").textContent =
+        `₹${amount.toLocaleString("en-IN")}`;
+
+};
+
+
+// Recalculate the amount when the venue or days change.
+document.getElementById("venueSelect")
+    .addEventListener("change", calculateAmount);
+
+document.getElementById("days")
+    .addEventListener("input", calculateAmount);
+
+
+// ==========================================
+// 7. HANDLE BOOKING FORM SUBMISSION
+// ==========================================
+
+document.getElementById("bookingForm").addEventListener("submit", (event) => {
+
+    // Prevent the browser from reloading the page.
+    event.preventDefault();
+
+    // Read values from the booking form.
+    const customerName =
+        document.getElementById("customerName").value.trim();
+
+    const customerEmail =
+        document.getElementById("customerEmail").value.trim();
+
+    const venueId =
+        Number(document.getElementById("venueSelect").value);
+
+    const eventType =
+        document.getElementById("eventType").value;
+
+    const eventDate =
+        document.getElementById("eventDate").value;
+
+    const guests =
+        Number(document.getElementById("guests").value);
+
+    const days =
+        Number(document.getElementById("days").value);
+
+    // Find the venue selected in the form.
+    const venue = venues.find(item => item.id === venueId);
+
+    // Validate the selected venue.
+    if (!venue || !venue.available) {
+        alert("Please select an available venue.");
+        return;
+    }
+
+    // Validate guest capacity.
+    if (guests < 1 || guests > venue.capacity) {
+        alert(`Guest count must be between 1 and ${venue.capacity}.`);
+        return;
+    }
+
+    // Validate the number of booking days.
+    if (days < 1 || !Number.isInteger(days)) {
+        alert("Please enter a valid number of days.");
+        return;
+    }
+
+    // Prevent booking for a past date.
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const chosenDate = new Date(`${eventDate}T00:00:00`);
+
+    if (!eventDate || chosenDate < today) {
+        alert("Please select today or a future event date.");
+        return;
+    }
+
+    // Calculate the final amount.
+    const totalAmount = venue.price * days;
+
+    // Create a booking object from the submitted form details.
+    const booking = {
+        customerName: customerName,
+        customerEmail: customerEmail,
+        venueName: venue.name,
+        eventType: eventType,
+        eventDate: eventDate,
+        guests: guests,
+        days: days,
+        totalAmount: totalAmount
+    };
+
+    // Add the new booking object to the bookings array.
+    bookings.push(booking);
+
+    // Display the latest booking summary.
+    displayBookingSummary(booking);
+
+    // Refresh the confirmed bookings table.
+    displayBookings();
+
+    // Clear the form after a successful booking.
+    document.getElementById("bookingForm").reset();
+
+    // Clear the selected venue and reset the amount.
+    selectedVenue = null;
+    document.getElementById("bookingAmount").textContent = "₹0";
+
+    alert("Venue booking confirmed successfully!");
+
+});
+
+
+// ==========================================
+// 8. DISPLAY LATEST BOOKING SUMMARY
+// ==========================================
+
+const displayBookingSummary = (booking) => {
+
+    // Display the details of the latest confirmed booking.
+    document.getElementById("bookingSummary").innerHTML = `
+        <p><strong>Customer:</strong> ${booking.customerName}</p>
+        <p><strong>Email:</strong> ${booking.customerEmail}</p>
+        <p><strong>Venue:</strong> ${booking.venueName}</p>
+        <p><strong>Event:</strong> ${booking.eventType}</p>
+        <p><strong>Date:</strong> ${booking.eventDate}</p>
+        <p><strong>Guests:</strong> ${booking.guests}</p>
+        <p><strong>Days:</strong> ${booking.days}</p>
+        <h5 class="text-success">
+            Total Amount: ₹${booking.totalAmount.toLocaleString("en-IN")}
+        </h5>
+    `;
+
+};
+
+
+// ==========================================
+// 9. DISPLAY ALL BOOKINGS USING map()
+// ==========================================
+
+const displayBookings = () => {
+
+    // Generate one table row for each confirmed booking.
+    document.getElementById("bookingTable").innerHTML =
+        bookings.map(booking => `
+            <tr>
+                <td>${booking.customerName}</td>
+                <td>${booking.venueName}</td>
+                <td>${booking.eventType}</td>
+                <td>${booking.eventDate}</td>
+                <td>${booking.guests}</td>
+                <td>${booking.days}</td>
+                <td>₹${booking.totalAmount.toLocaleString("en-IN")}</td>
+            </tr>
+        `).join("");
+
+    // Calculate total revenue from all confirmed bookings using reduce().
+    const totalRevenue = bookings.reduce((total, booking) => {
+        return total + booking.totalAmount;
+    }, 0);
+
+    // Display the total revenue.
+    document.getElementById("totalRevenue").textContent =
+        `₹${totalRevenue.toLocaleString("en-IN")}`;
+
+};
+
+
+// ==========================================
+// 10. INITIALIZE THE PAGE
+// ==========================================
+
+// Display all venues when the page first loads.
+displayVenues(venues);
+
+// Populate the venue dropdown.
+populateVenueSelect();
+
+// Set the event date's minimum to today.
+const dateInput = document.getElementById("eventDate");
+const todayString = new Date();
+const year = todayString.getFullYear();
+const month = String(todayString.getMonth() + 1).padStart(2, "0");
+const day = String(todayString.getDate()).padStart(2, "0");
+
+dateInput.min = `${year}-${month}-${day}`;
+
+</script>
+
+</body>
+</html>
